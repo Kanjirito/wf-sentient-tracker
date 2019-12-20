@@ -1,4 +1,4 @@
-#!/bin/env python3
+#!/usr/bin/env python3
 import requests
 import json
 import sys
@@ -37,7 +37,8 @@ class MainWindow(QWidget):
 
         self.tray_icon = QSystemTrayIcon(self)
         self.tray_icon.setIcon(self.icon)
-        self.tray_icon.setToolTip("Sentient tracker")
+        self.tray_icon.setToolTip("No anomaly")
+        self.tray_icon.activated.connect(self.double_click)
 
         show_action = QAction("Show", self)
         quit_action = QAction("Exit", self)
@@ -58,6 +59,11 @@ class MainWindow(QWidget):
 
     @pyqtSlot(str)
     def use_data(self, data):
+        if data == "Error":
+            self.ui.StatusLabel.setText("Connection error")
+            self.tray_icon.setToolTip("Connection error")
+            self.last_state = None
+            return
         planet = json.loads(data)
 
         if planet and not self.last_state:
@@ -74,6 +80,7 @@ class MainWindow(QWidget):
                     text,
                     QSystemTrayIcon.Information,
                     10000)
+            self.tray_icon.setToolTip(f"Anomaly at {self.nodes[code]}")
             self.last_state = True
         elif not planet and self.last_state:
             self.ui.StatusLabel.setText("No anomaly currently present")
@@ -86,6 +93,11 @@ class MainWindow(QWidget):
                     "Anomaly despawned",
                     self.icon,
                     2000)
+            self.tray_icon.setToolTip("No anomaly")
+            self.last_state = False
+        elif not planet and self.last_state is None:
+            self.ui.StatusLabel.setText("No anomaly currently present")
+            self.tray_icon.setToolTip("No anomaly")
             self.last_state = False
 
     def closeEvent(self, event):
@@ -99,6 +111,10 @@ class MainWindow(QWidget):
                     self.icon,
                     2000)
 
+    def double_click(self, reason):
+        if reason == QSystemTrayIcon.DoubleClick:
+            self.show()
+
 
 class Worker(QObject):
     result = pyqtSignal(str)
@@ -108,10 +124,16 @@ class Worker(QObject):
         session = requests.Session()
         url = "http://content.warframe.com/dynamic/worldState.php"
         while True:
-            worldstate = session.get(url).json()
-            spawn = worldstate["Tmp"]
-
-            self.result.emit(spawn)
+            try:
+                r = session.get(url, timeout=5)
+                r.raise_for_status()
+            except requests.exceptions.RequestException as e:
+                print(e)
+                self.result.emit("Error")
+            else:
+                worldstate = r.json()
+                spawn = worldstate["Tmp"]
+                self.result.emit(spawn)
             sleep(60)
 
 
