@@ -2,6 +2,7 @@
 import requests
 import json
 import sys
+from pathlib import Path
 from ui import Ui_MainWidget
 from time import sleep
 from PyQt5.QtWidgets import (
@@ -17,6 +18,7 @@ class MainWindow(QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.last_state = None
+        self.tray_close_shown = False
         self.nodes = {505: "Ruse War Field",
                       510: "Gian Point",
                       550: "Nsu Grid",
@@ -25,14 +27,14 @@ class MainWindow(QWidget):
                       553: "Flexa",
                       554: "H-2 Cloud",
                       555: "R-9 Cloud"}
-        self.sounds = {"spawn": QSound("resources/spawn.wav"),
-                       "despawn": QSound("resources/despawn.wav")}
-        self.icon = QIcon("resources/icon.png")
 
         # Set up the user interface from Designer.
         self.ui = Ui_MainWidget()
         self.ui.setupUi(self)
+        self.ui.SpawnButton.clicked.connect(self.play_spawn)
+        self.ui.DespawnButton.clicked.connect(self.play_despawn)
 
+        self.handle_files()
         self.setWindowIcon(self.icon)
 
         self.tray_icon = QSystemTrayIcon(self)
@@ -57,6 +59,42 @@ class MainWindow(QWidget):
         self.worker_thread.started.connect(self.worker.get_data)
         self.worker_thread.start()
 
+    def handle_files(self):
+        if hasattr(sys, "_MEIPASS"):
+            meipass_path = Path(sys._MEIPASS) / 'resources'
+        else:
+            meipass_path = None
+        local_path = Path(".") / "resources"
+
+        spawn_path = local_path / "spawn.wav"
+        if spawn_path.is_file():
+            spawn_sound = f"{spawn_path}"
+        elif meipass_path:
+            spawn_sound = f"{meipass_path / 'spawn.wav'}"
+
+        despawn_path = local_path / "despawn.wav"
+        if despawn_path.is_file():
+            despawn_sound = f"{despawn_path}"
+        elif meipass_path:
+            despawn_sound = f"{meipass_path / 'despawn.wav'}"
+
+        if meipass_path:
+            icon_file = f"{meipass_path / 'icon.png'}"
+        else:
+            icon_file = f"{local_path / 'icon.png'}"
+
+        self.sounds = {"spawn": QSound(spawn_sound),
+                       "despawn": QSound(despawn_sound)}
+        self.icon = QIcon(icon_file)
+
+    @pyqtSlot()
+    def play_spawn(self):
+        self.sounds["spawn"].play()
+
+    @pyqtSlot()
+    def play_despawn(self):
+        self.sounds["despawn"].play()
+
     @pyqtSlot(str)
     def use_data(self, data):
         if data == "Error":
@@ -78,7 +116,7 @@ class MainWindow(QWidget):
                 self.tray_icon.showMessage(
                     "Sentient anomaly tracker",
                     text,
-                    QSystemTrayIcon.Information,
+                    self.icon,
                     10000)
             self.tray_icon.setToolTip(f"Anomaly at {self.nodes[code]}")
             self.last_state = True
@@ -104,12 +142,13 @@ class MainWindow(QWidget):
         if self.ui.TrayCheckbox.isChecked():
             event.ignore()
             self.hide()
-            if self.ui.MessegesCheckbox.isChecked():
+            if self.ui.MessegesCheckbox.isChecked() and not self.tray_close_shown:
                 self.tray_icon.showMessage(
                     "Sentient anomaly tracker",
                     "Tracker was closed to tray",
                     self.icon,
                     2000)
+                self.tray_close_shown = True
 
     def double_click(self, reason):
         if reason == QSystemTrayIcon.DoubleClick:
