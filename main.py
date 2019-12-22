@@ -33,7 +33,12 @@ class MainWindow(QWidget):
         self.ui.setupUi(self)
         self.ui.SpawnButton.clicked.connect(self.play_spawn)
         self.ui.DespawnButton.clicked.connect(self.play_despawn)
+        self.ui.SoundCheckbox.stateChanged.connect(self.sound_change)
+        self.ui.MessagesCheckbox.stateChanged.connect(self.message_change)
+        self.ui.TrayCheckbox.stateChanged.connect(self.tray_change)
+        self.ui.PlatfromCombobox.currentTextChanged.connect(self.platform_change)
 
+        self.load_config()
         self.handle_files()
         self.setWindowIcon(self.icon)
 
@@ -58,6 +63,31 @@ class MainWindow(QWidget):
         self.worker.moveToThread(self.worker_thread)
         self.worker_thread.started.connect(self.worker.get_data)
         self.worker_thread.start()
+
+    def load_config(self):
+        conf_path = Path(".") / "settings.json"
+        if conf_path.is_file():
+            with open(conf_path) as f:
+                self.settings = json.load(f)
+        else:
+            self.settings = {"sounds": True,
+                             "messages": True,
+                             "tray": True,
+                             "platform": "PC"}
+
+        if not self.settings["sounds"]:
+            self.ui.SoundCheckbox.setChecked(False)
+        if not self.settings["messages"]:
+            self.ui.MessagesCheckbox.setChecked(False)
+        if not self.settings["tray"]:
+            self.ui.TrayCheckbox.setChecked(False)
+
+        self.ui.PlatfromCombobox.setCurrentText(self.settings["platform"])
+
+    def save_config(self):
+        conf_path = Path(".") / "settings.json"
+        with open(conf_path, "w") as f:
+            json.dump(self.settings, f, indent=4)
 
     def handle_files(self):
         if hasattr(sys, "_MEIPASS"):
@@ -87,6 +117,41 @@ class MainWindow(QWidget):
                        "despawn": QSound(despawn_sound)}
         self.icon = QIcon(icon_file)
 
+    @pyqtSlot(int)
+    def sound_change(self, num):
+        if num == 0:
+            state = False
+        elif num == 2:
+            state = True
+
+        self.settings["sounds"] = state
+        self.save_config()
+
+    @pyqtSlot(int)
+    def message_change(self, num):
+        if num == 0:
+            state = False
+        elif num == 2:
+            state = True
+
+        self.settings["messages"] = state
+        self.save_config()
+
+    @pyqtSlot(int)
+    def tray_change(self, num):
+        if num == 0:
+            state = False
+        elif num == 2:
+            state = True
+
+        self.settings["tray"] = state
+        self.save_config()
+
+    @pyqtSlot(str)
+    def platform_change(self, platform):
+        self.settings["platform"] = platform
+        self.save_config()
+
     @pyqtSlot()
     def play_spawn(self):
         self.sounds["spawn"].play()
@@ -112,7 +177,7 @@ class MainWindow(QWidget):
             if self.ui.SoundCheckbox.isChecked():
                 self.sounds["spawn"].play()
 
-            if self.ui.MessegesCheckbox.isChecked():
+            if self.ui.MessagesCheckbox.isChecked():
                 self.tray_icon.showMessage(
                     "Sentient anomaly tracker",
                     text,
@@ -125,7 +190,7 @@ class MainWindow(QWidget):
             if self.ui.SoundCheckbox.isChecked():
                 self.sounds["despawn"].play()
 
-            if self.ui.MessegesCheckbox.isChecked():
+            if self.ui.MessagesCheckbox.isChecked():
                 self.tray_icon.showMessage(
                     "Sentient anomaly tracker",
                     "Anomaly despawned",
@@ -142,7 +207,7 @@ class MainWindow(QWidget):
         if self.ui.TrayCheckbox.isChecked():
             event.ignore()
             self.hide()
-            if self.ui.MessegesCheckbox.isChecked() and not self.tray_close_shown:
+            if self.ui.MessagesCheckbox.isChecked() and not self.tray_close_shown:
                 self.tray_icon.showMessage(
                     "Sentient anomaly tracker",
                     "Tracker was closed to tray",

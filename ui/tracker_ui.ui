@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>483</width>
-    <height>161</height>
+    <height>221</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,6 +28,75 @@
      <property name="textInteractionFlags">
       <set>Qt::NoTextInteraction</set>
      </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="frame_3">
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <spacer name="horizontalSpacer_6">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Select platfrom:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="PlatfromCombobox">
+        <item>
+         <property name="text">
+          <string>PC</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>PS4</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>XB1</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>SWI</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_5">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
     </widget>
    </item>
    <item>
@@ -69,9 +138,9 @@
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="MessegesCheckbox">
+       <widget class="QCheckBox" name="MessagesCheckbox">
         <property name="text">
-         <string>Messeges</string>
+         <string>Messages</string>
         </property>
         <property name="checked">
          <bool>true</bool>

@@ -109,3 +109,5 @@ dmypy.json
 .pyre/
 
 # End of https://www.gitignore.io/api/python
+ideas.txt
+settings.json
