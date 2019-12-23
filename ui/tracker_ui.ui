@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>483</width>
-    <height>221</height>
+    <height>227</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -76,11 +76,13 @@
           <string>XB1</string>
          </property>
         </item>
-        <item>
-         <property name="text">
-          <string>SWI</string>
-         </property>
-        </item>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="CheckButton">
+        <property name="text">
+         <string>Check now</string>
+        </property>
        </widget>
       </item>
       <item>

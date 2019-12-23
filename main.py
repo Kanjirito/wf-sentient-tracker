@@ -4,13 +4,12 @@ import json
 import sys
 from pathlib import Path
 from ui import Ui_MainWidget
-from time import sleep
 from PyQt5.QtWidgets import (
     QApplication, QWidget,
     QSystemTrayIcon,
-    QMenu, QAction, qApp)
+    QMenu, QAction, QStyle)
 from PyQt5.QtMultimedia import QSound
-from PyQt5.QtCore import QObject, QThread, pyqtSlot, pyqtSignal
+from PyQt5.QtCore import QObject, QThread, pyqtSlot, pyqtSignal, QTimer
 from PyQt5.QtGui import QIcon
 
 
@@ -19,6 +18,7 @@ class MainWindow(QWidget):
         super(MainWindow, self).__init__()
         self.last_state = None
         self.tray_close_shown = False
+        self.conf_path = Path(".") / "settings.json"
         self.nodes = {505: "Ruse War Field",
                       510: "Gian Point",
                       550: "Nsu Grid",
@@ -38,36 +38,36 @@ class MainWindow(QWidget):
         self.ui.TrayCheckbox.stateChanged.connect(self.tray_change)
         self.ui.PlatfromCombobox.currentTextChanged.connect(self.platform_change)
 
-        self.load_config()
         self.handle_files()
         self.setWindowIcon(self.icon)
 
-        self.tray_icon = QSystemTrayIcon(self)
-        self.tray_icon.setIcon(self.icon)
-        self.tray_icon.setToolTip("No anomaly")
-        self.tray_icon.activated.connect(self.double_click)
+        self.TrayIcon = QSystemTrayIcon(self)
+        self.TrayIcon.setIcon(self.icon)
+        self.TrayIcon.setToolTip("No anomaly")
+        self.TrayIcon.activated.connect(self.double_click)
 
         show_action = QAction("Show", self)
         quit_action = QAction("Exit", self)
         show_action.triggered.connect(self.show)
-        quit_action.triggered.connect(qApp.quit)
+        quit_action.triggered.connect(self.quit_save)
         tray_menu = QMenu()
         tray_menu.addAction(show_action)
         tray_menu.addAction(quit_action)
-        self.tray_icon.setContextMenu(tray_menu)
-        self.tray_icon.show()
+        self.TrayIcon.setContextMenu(tray_menu)
 
         self.worker_thread = QThread()
         self.worker = Worker()
         self.worker.result.connect(self.use_data)
         self.worker.moveToThread(self.worker_thread)
-        self.worker_thread.started.connect(self.worker.get_data)
+        self.worker_thread.started.connect(self.worker.timer.start)
         self.worker_thread.start()
+        self.ui.CheckButton.clicked.connect(self.worker.get_data)
+
+        self.load_config()
 
     def load_config(self):
-        conf_path = Path(".") / "settings.json"
-        if conf_path.is_file():
-            with open(conf_path) as f:
+        if self.conf_path.is_file():
+            with open(self.conf_path) as f:
                 self.settings = json.load(f)
         else:
             self.settings = {"sounds": True,
@@ -81,12 +81,17 @@ class MainWindow(QWidget):
             self.ui.MessagesCheckbox.setChecked(False)
         if not self.settings["tray"]:
             self.ui.TrayCheckbox.setChecked(False)
+        else:
+            self.TrayIcon.show()
 
-        self.ui.PlatfromCombobox.setCurrentText(self.settings["platform"])
+        platform = self.settings["platform"]
+        if platform == "PC":
+            self.worker.get_data()
+        else:
+            self.ui.PlatfromCombobox.setCurrentText(platform)
 
     def save_config(self):
-        conf_path = Path(".") / "settings.json"
-        with open(conf_path, "w") as f:
+        with open(self.conf_path, "w") as f:
             json.dump(self.settings, f, indent=4)
 
     def handle_files(self):
@@ -125,7 +130,6 @@ class MainWindow(QWidget):
             state = True
 
         self.settings["sounds"] = state
-        self.save_config()
 
     @pyqtSlot(int)
     def message_change(self, num):
@@ -135,22 +139,23 @@ class MainWindow(QWidget):
             state = True
 
         self.settings["messages"] = state
-        self.save_config()
 
     @pyqtSlot(int)
     def tray_change(self, num):
         if num == 0:
+            self.TrayIcon.hide()
             state = False
         elif num == 2:
+            self.TrayIcon.show()
             state = True
 
         self.settings["tray"] = state
-        self.save_config()
 
     @pyqtSlot(str)
     def platform_change(self, platform):
         self.settings["platform"] = platform
-        self.save_config()
+        self.worker.current_platform = platform
+        self.worker.get_data()
 
     @pyqtSlot()
     def play_spawn(self):
@@ -164,7 +169,7 @@ class MainWindow(QWidget):
     def use_data(self, data):
         if data == "Error":
             self.ui.StatusLabel.setText("Connection error")
-            self.tray_icon.setToolTip("Connection error")
+            self.TrayIcon.setToolTip("Connection error")
             self.last_state = None
             return
         planet = json.loads(data)
@@ -178,12 +183,12 @@ class MainWindow(QWidget):
                 self.sounds["spawn"].play()
 
             if self.ui.MessagesCheckbox.isChecked():
-                self.tray_icon.showMessage(
+                self.TrayIcon.showMessage(
                     "Sentient anomaly tracker",
                     text,
                     self.icon,
                     10000)
-            self.tray_icon.setToolTip(f"Anomaly at {self.nodes[code]}")
+            self.TrayIcon.setToolTip(f"Anomaly at {self.nodes[code]}")
             self.last_state = True
         elif not planet and self.last_state:
             self.ui.StatusLabel.setText("No anomaly currently present")
@@ -191,29 +196,36 @@ class MainWindow(QWidget):
                 self.sounds["despawn"].play()
 
             if self.ui.MessagesCheckbox.isChecked():
-                self.tray_icon.showMessage(
+                self.TrayIcon.showMessage(
                     "Sentient anomaly tracker",
                     "Anomaly despawned",
                     self.icon,
                     2000)
-            self.tray_icon.setToolTip("No anomaly")
+            self.TrayIcon.setToolTip("No anomaly")
             self.last_state = False
         elif not planet and self.last_state is None:
             self.ui.StatusLabel.setText("No anomaly currently present")
-            self.tray_icon.setToolTip("No anomaly")
+            self.TrayIcon.setToolTip("No anomaly")
             self.last_state = False
+
+    @pyqtSlot()
+    def quit_save(self):
+        self.save_config()
+        QApplication.quit()
 
     def closeEvent(self, event):
         if self.ui.TrayCheckbox.isChecked():
             event.ignore()
             self.hide()
             if self.ui.MessagesCheckbox.isChecked() and not self.tray_close_shown:
-                self.tray_icon.showMessage(
+                self.TrayIcon.showMessage(
                     "Sentient anomaly tracker",
                     "Tracker was closed to tray",
                     self.icon,
                     2000)
                 self.tray_close_shown = True
+        else:
+            self.save_config()
 
     def double_click(self, reason):
         if reason == QSystemTrayIcon.DoubleClick:
@@ -223,22 +235,32 @@ class MainWindow(QWidget):
 class Worker(QObject):
     result = pyqtSignal(str)
 
+    def __init__(self):
+        super().__init__()
+        self.session = requests.Session()
+        self.timer = QTimer()
+        self.timer.setInterval(6000)
+        self.timer.timeout.connect(self.get_data)
+        self.base_url = "http://content{}.warframe.com/dynamic/worldState.php"
+        self.current_platform = "PC"
+        self.platforms = {"PC": "",
+                          "PS4": ".ps4",
+                          "XB1": ".xb1"}
+
     @pyqtSlot()
     def get_data(self):
-        session = requests.Session()
-        url = "http://content.warframe.com/dynamic/worldState.php"
-        while True:
-            try:
-                r = session.get(url, timeout=5)
-                r.raise_for_status()
-            except requests.exceptions.RequestException as e:
-                print(e)
-                self.result.emit("Error")
-            else:
-                worldstate = r.json()
-                spawn = worldstate["Tmp"]
-                self.result.emit(spawn)
-            sleep(60)
+        url = self.base_url.format(self.platforms[self.current_platform])
+        print("DATA GET", url)
+        try:
+            r = self.session.get(url, timeout=5)
+            r.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            print(e)
+            self.result.emit("Error")
+        else:
+            worldstate = r.json()
+            spawn = worldstate["Tmp"]
+            self.result.emit(spawn)
 
 
 if __name__ == "__main__":
