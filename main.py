@@ -7,7 +7,7 @@ from ui import Ui_MainWidget
 from PyQt5.QtWidgets import (
     QApplication, QWidget,
     QSystemTrayIcon,
-    QMenu, QAction, QStyle)
+    QMenu, QAction)
 from PyQt5.QtMultimedia import QSound
 from PyQt5.QtCore import QObject, QThread, pyqtSlot, pyqtSignal, QTimer
 from PyQt5.QtGui import QIcon
@@ -239,7 +239,7 @@ class Worker(QObject):
         super().__init__()
         self.session = requests.Session()
         self.timer = QTimer()
-        self.timer.setInterval(6000)
+        self.timer.setInterval(60000)
         self.timer.timeout.connect(self.get_data)
         self.base_url = "http://content{}.warframe.com/dynamic/worldState.php"
         self.current_platform = "PC"
@@ -250,7 +250,6 @@ class Worker(QObject):
     @pyqtSlot()
     def get_data(self):
         url = self.base_url.format(self.platforms[self.current_platform])
-        print("DATA GET", url)
         try:
             r = self.session.get(url, timeout=5)
             r.raise_for_status()
