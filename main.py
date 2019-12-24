@@ -3,11 +3,12 @@ import requests
 import json
 import sys
 from pathlib import Path
+from datetime import datetime
 from ui import Ui_MainWidget
 from PyQt5.QtWidgets import (
     QApplication, QWidget,
-    QSystemTrayIcon,
-    QMenu, QAction)
+    QSystemTrayIcon, QMessageBox,
+    QMenu, QAction, QStyle)
 from PyQt5.QtMultimedia import QSound
 from PyQt5.QtCore import QObject, QThread, pyqtSlot, pyqtSignal, QTimer
 from PyQt5.QtGui import QIcon
@@ -17,6 +18,8 @@ class MainWindow(QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.last_state = None
+        self.last_spawn = None
+        self.last_despawn = None
         self.tray_close_shown = False
         self.conf_path = Path(".") / "settings.json"
         self.nodes = {505: "Ruse War Field",
@@ -37,6 +40,9 @@ class MainWindow(QWidget):
         self.ui.MessagesCheckbox.stateChanged.connect(self.message_change)
         self.ui.TrayCheckbox.stateChanged.connect(self.tray_change)
         self.ui.PlatfromCombobox.currentTextChanged.connect(self.platform_change)
+        info_icon = QIcon(self.style().standardIcon(QStyle.SP_MessageBoxInformation))
+        self.ui.HelpButton.setIcon(info_icon)
+        self.ui.HelpButton.clicked.connect(self.show_help)
 
         self.handle_files()
         self.setWindowIcon(self.icon)
@@ -188,10 +194,20 @@ class MainWindow(QWidget):
                     text,
                     self.icon,
                     10000)
-            self.TrayIcon.setToolTip(f"Anomaly at {self.nodes[code]}")
+
+            if self.last_state is False:
+                self.last_spawn = datetime.now().strftime("%H:%M:%S")
+                self.ui.SpawnLabel.setText(self.last_spawn)
+                tool_tip = f"Anomaly at {self.nodes[code]} since {self.last_spawn}"
+            else:
+                tool_tip = f"Anomaly at {self.nodes[code]}"
+            self.TrayIcon.setToolTip(tool_tip)
             self.last_state = True
+
         elif not planet and self.last_state:
             self.ui.StatusLabel.setText("No anomaly currently present")
+            self.last_despawn = datetime.now().strftime("%H:%M:%S")
+            self.ui.DespawnLabel.setText(self.last_despawn)
             if self.ui.SoundCheckbox.isChecked():
                 self.sounds["despawn"].play()
 
@@ -201,7 +217,7 @@ class MainWindow(QWidget):
                     "Anomaly despawned",
                     self.icon,
                     2000)
-            self.TrayIcon.setToolTip("No anomaly")
+            self.TrayIcon.setToolTip(f"No anomaly since {self.last_despawn}")
             self.last_state = False
         elif not planet and self.last_state is None:
             self.ui.StatusLabel.setText("No anomaly currently present")
@@ -212,6 +228,17 @@ class MainWindow(QWidget):
     def quit_save(self):
         self.save_config()
         QApplication.quit()
+
+    @pyqtSlot()
+    def show_help(self):
+        text = ("This application will notify you when a sentient anomaly spawns.<br>"
+                "The spawns last for around 30min and take around 3h (+- 30min) to spawn.<br>"
+                "More information, the source code and new versions can be found on the "
+                "<a href='https://github.com/Kanjirito/wf-sentient-tracker'>GitHub page.</a>")
+
+        QMessageBox.about(self,
+                          "Help window",
+                          text)
 
     def closeEvent(self, event):
         if self.ui.TrayCheckbox.isChecked():
