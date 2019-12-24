@@ -4,7 +4,7 @@ import json
 import sys
 from pathlib import Path
 from datetime import datetime
-from ui import Ui_MainWidget
+from .ui import Ui_MainWidget
 from PyQt5.QtWidgets import (
     QApplication, QWidget,
     QSystemTrayIcon, QMessageBox,
@@ -21,7 +21,8 @@ class MainWindow(QWidget):
         self.last_spawn = None
         self.last_despawn = None
         self.tray_close_shown = False
-        self.conf_path = Path(".") / "settings.json"
+        self.local_path = Path(__file__).parent
+        self.conf_path = self.local_path / "settings.json"
         self.nodes = {505: "Ruse War Field",
                       510: "Gian Point",
                       550: "Nsu Grid",
@@ -61,11 +62,11 @@ class MainWindow(QWidget):
         tray_menu.addAction(quit_action)
         self.TrayIcon.setContextMenu(tray_menu)
 
-        self.worker_thread = QThread()
+        self.worker_thread = QThread(parent=self)
         self.worker = Worker()
         self.worker.result.connect(self.use_data)
         self.worker.moveToThread(self.worker_thread)
-        self.worker_thread.started.connect(self.worker.timer.start)
+        self.worker_thread.started.connect(self.worker.start_worker)
         self.worker_thread.start()
         self.ui.CheckButton.clicked.connect(self.worker.get_data)
 
@@ -105,15 +106,15 @@ class MainWindow(QWidget):
             meipass_path = Path(sys._MEIPASS) / 'resources'
         else:
             meipass_path = None
-        local_path = Path(".") / "resources"
+        resource_path = self.local_path / "resources"
 
-        spawn_path = local_path / "spawn.wav"
+        spawn_path = resource_path / "spawn.wav"
         if spawn_path.is_file():
             spawn_sound = f"{spawn_path}"
         elif meipass_path:
             spawn_sound = f"{meipass_path / 'spawn.wav'}"
 
-        despawn_path = local_path / "despawn.wav"
+        despawn_path = resource_path / "despawn.wav"
         if despawn_path.is_file():
             despawn_sound = f"{despawn_path}"
         elif meipass_path:
@@ -122,7 +123,7 @@ class MainWindow(QWidget):
         if meipass_path:
             icon_file = f"{meipass_path / 'icon.png'}"
         else:
-            icon_file = f"{local_path / 'icon.png'}"
+            icon_file = f"{resource_path / 'icon.png'}"
 
         self.sounds = {"spawn": QSound(spawn_sound),
                        "despawn": QSound(despawn_sound)}
@@ -265,14 +266,17 @@ class Worker(QObject):
     def __init__(self):
         super().__init__()
         self.session = requests.Session()
-        self.timer = QTimer()
-        self.timer.setInterval(60000)
-        self.timer.timeout.connect(self.get_data)
         self.base_url = "http://content{}.warframe.com/dynamic/worldState.php"
         self.current_platform = "PC"
         self.platforms = {"PC": "",
                           "PS4": ".ps4",
                           "XB1": ".xb1"}
+
+    @pyqtSlot()
+    def start_worker(self):
+        self.timer = QTimer()
+        self.timer.setInterval(60000)
+        self.timer.timeout.connect(self.get_data)
 
     @pyqtSlot()
     def get_data(self):
@@ -289,8 +293,12 @@ class Worker(QObject):
             self.result.emit(spawn)
 
 
-if __name__ == "__main__":
+def main():
     app = QApplication(sys.argv)
     mainwindow = MainWindow()
     mainwindow.show()
     sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    main()
