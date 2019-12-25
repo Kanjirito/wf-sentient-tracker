@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui/tracker_ui.ui'
 #
-# Created by: PyQt5 UI code generator 5.13.2
+# Created by: PyQt5 UI code generator 5.14.0
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -13,7 +13,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWidget(object):
     def setupUi(self, MainWidget):
         MainWidget.setObjectName("MainWidget")
-        MainWidget.resize(543, 300)
+        MainWidget.resize(543, 306)
         self.verticalLayout = QtWidgets.QVBoxLayout(MainWidget)
         self.verticalLayout.setObjectName("verticalLayout")
         self.frame_4 = QtWidgets.QFrame(MainWidget)
@@ -109,6 +109,9 @@ class Ui_MainWidget(object):
         self.TrayCheckbox.setChecked(True)
         self.TrayCheckbox.setObjectName("TrayCheckbox")
         self.horizontalLayout.addWidget(self.TrayCheckbox)
+        self.DirectoryButton = QtWidgets.QPushButton(self.frame)
+        self.DirectoryButton.setObjectName("DirectoryButton")
+        self.horizontalLayout.addWidget(self.DirectoryButton)
         spacerItem5 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem5)
         self.verticalLayout.addWidget(self.frame)
@@ -177,6 +180,7 @@ class Ui_MainWidget(object):
         self.SoundCheckbox.setText(_translate("MainWidget", "Sound"))
         self.MessagesCheckbox.setText(_translate("MainWidget", "Messages"))
         self.TrayCheckbox.setText(_translate("MainWidget", "Exit to tray"))
+        self.DirectoryButton.setText(_translate("MainWidget", "Open config directory"))
         self.SpawnButton.setText(_translate("MainWidget", "Play spawn sound"))
         self.DespawnButton.setText(_translate("MainWidget", "Play despawn sound"))
         self.ExitButton.setText(_translate("MainWidget", "Exit"))

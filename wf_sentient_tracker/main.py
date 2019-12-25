@@ -2,6 +2,8 @@
 import requests
 import json
 import sys
+import os
+import subprocess
 from pathlib import Path
 from datetime import datetime
 from .ui import Ui_MainWidget
@@ -21,8 +23,6 @@ class MainWindow(QWidget):
         self.last_spawn = None
         self.last_despawn = None
         self.tray_close_shown = False
-        self.local_path = Path(__file__).parent
-        self.conf_path = self.local_path / "settings.json"
         self.nodes = {505: "Ruse War Field",
                       510: "Gian Point",
                       550: "Nsu Grid",
@@ -44,6 +44,7 @@ class MainWindow(QWidget):
         info_icon = QIcon(self.style().standardIcon(QStyle.SP_MessageBoxInformation))
         self.ui.HelpButton.setIcon(info_icon)
         self.ui.HelpButton.clicked.connect(self.show_help)
+        self.ui.DirectoryButton.clicked.connect(self.open_directory)
 
         self.handle_files()
         self.setWindowIcon(self.icon)
@@ -97,37 +98,47 @@ class MainWindow(QWidget):
         else:
             self.ui.PlatfromCombobox.setCurrentText(platform)
 
-    def save_config(self):
-        with open(self.conf_path, "w") as f:
-            json.dump(self.settings, f, indent=4)
-
     def handle_files(self):
+        # _MEIPASS is the temp directory used be the .exe
         if hasattr(sys, "_MEIPASS"):
-            meipass_path = Path(sys._MEIPASS) / 'resources'
+            defualt_path = Path(sys._MEIPASS) / "resources"
         else:
-            meipass_path = None
-        resource_path = self.local_path / "resources"
+            defualt_path = Path(__file__).resolve().parent / "resources"
 
-        spawn_path = resource_path / "spawn.wav"
+        # Determines the base path for the config/custom files
+        dot_conf_path = Path.home() / ".config"
+        if dot_conf_path.is_dir():
+            self.base_path = dot_conf_path / "sentient-tracker"
+        else:
+            self.base_path = Path.home() / ".sentient-tracker"
+
+        self.base_path.mkdir(parents=True, exist_ok=True)
+        self.conf_path = self.base_path / "settings.json"
+
+        spawn_path = self.base_path / "spawn.wav"
         if spawn_path.is_file():
             spawn_sound = f"{spawn_path}"
-        elif meipass_path:
-            spawn_sound = f"{meipass_path / 'spawn.wav'}"
+        else:
+            spawn_sound = f"{defualt_path / 'spawn.wav'}"
 
-        despawn_path = resource_path / "despawn.wav"
+        despawn_path = self.base_path / "despawn.wav"
         if despawn_path.is_file():
             despawn_sound = f"{despawn_path}"
-        elif meipass_path:
-            despawn_sound = f"{meipass_path / 'despawn.wav'}"
-
-        if meipass_path:
-            icon_file = f"{meipass_path / 'icon.png'}"
         else:
-            icon_file = f"{resource_path / 'icon.png'}"
+            despawn_sound = f"{defualt_path / 'despawn.wav'}"
 
+        icon_file = f"{defualt_path / 'icon.png'}"
         self.sounds = {"spawn": QSound(spawn_sound),
                        "despawn": QSound(despawn_sound)}
         self.icon = QIcon(icon_file)
+
+    @pyqtSlot()
+    def open_directory(self):
+        if sys.platform == "win32":
+            os.startfile(self.base_path)
+        else:
+            opener = "open" if sys.platform == "darwin" else "xdg-open"
+            subprocess.call([opener, self.base_path])
 
     @pyqtSlot(int)
     def sound_change(self, num):
@@ -227,7 +238,10 @@ class MainWindow(QWidget):
 
     @pyqtSlot()
     def quit_save(self):
-        self.save_config()
+        with open(self.conf_path, "w") as f:
+            json.dump(self.settings, f, indent=4)
+        self.worker.timer.stop()
+        self.worker_thread.quit()
         QApplication.quit()
 
     @pyqtSlot()
@@ -242,8 +256,8 @@ class MainWindow(QWidget):
                           text)
 
     def closeEvent(self, event):
+        event.ignore()
         if self.ui.TrayCheckbox.isChecked():
-            event.ignore()
             self.hide()
             if self.ui.MessagesCheckbox.isChecked() and not self.tray_close_shown:
                 self.TrayIcon.showMessage(
@@ -253,7 +267,7 @@ class MainWindow(QWidget):
                     2000)
                 self.tray_close_shown = True
         else:
-            self.save_config()
+            self.quit_save()
 
     def double_click(self, reason):
         if reason == QSystemTrayIcon.DoubleClick:
