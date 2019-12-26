@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>543</width>
-    <height>306</height>
+    <height>336</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -147,7 +147,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QComboBox" name="PlatfromCombobox">
+       <widget class="QComboBox" name="PlatformCombobox">
         <item>
          <property name="text">
           <string>PC</string>
@@ -227,6 +227,16 @@
        </widget>
       </item>
       <item>
+       <widget class="QCheckBox" name="TrayCheckbox">
+        <property name="text">
+         <string>Tray Icon</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QCheckBox" name="MessagesCheckbox">
         <property name="text">
          <string>Messages</string>
@@ -237,19 +247,15 @@
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="TrayCheckbox">
+       <widget class="QCheckBox" name="TrayhideCheckbox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
         <property name="text">
          <string>Exit to tray</string>
         </property>
         <property name="checked">
          <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="DirectoryButton">
-        <property name="text">
-         <string>Open config directory</string>
         </property>
        </widget>
       </item>
@@ -267,6 +273,13 @@
        </spacer>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="DirectoryButton">
+     <property name="text">
+      <string>Open config directory</string>
+     </property>
     </widget>
    </item>
    <item>
@@ -376,6 +389,38 @@
     <hint type="destinationlabel">
      <x>336</x>
      <y>209</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>TrayCheckbox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>TrayhideCheckbox</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>269</x>
+     <y>197</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>269</x>
+     <y>233</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>TrayCheckbox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MessagesCheckbox</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>219</x>
+     <y>197</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>167</x>
+     <y>233</y>
     </hint>
    </hints>
   </connection>

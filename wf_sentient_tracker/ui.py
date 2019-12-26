@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui/tracker_ui.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.0
+# Created by: PyQt5 UI code generator 5.13.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -13,7 +13,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWidget(object):
     def setupUi(self, MainWidget):
         MainWidget.setObjectName("MainWidget")
-        MainWidget.resize(543, 306)
+        MainWidget.resize(543, 336)
         self.verticalLayout = QtWidgets.QVBoxLayout(MainWidget)
         self.verticalLayout.setObjectName("verticalLayout")
         self.frame_4 = QtWidgets.QFrame(MainWidget)
@@ -72,12 +72,12 @@ class Ui_MainWidget(object):
         self.label = QtWidgets.QLabel(self.frame_3)
         self.label.setObjectName("label")
         self.horizontalLayout_3.addWidget(self.label)
-        self.PlatfromCombobox = QtWidgets.QComboBox(self.frame_3)
-        self.PlatfromCombobox.setObjectName("PlatfromCombobox")
-        self.PlatfromCombobox.addItem("")
-        self.PlatfromCombobox.addItem("")
-        self.PlatfromCombobox.addItem("")
-        self.horizontalLayout_3.addWidget(self.PlatfromCombobox)
+        self.PlatformCombobox = QtWidgets.QComboBox(self.frame_3)
+        self.PlatformCombobox.setObjectName("PlatformCombobox")
+        self.PlatformCombobox.addItem("")
+        self.PlatformCombobox.addItem("")
+        self.PlatformCombobox.addItem("")
+        self.horizontalLayout_3.addWidget(self.PlatformCombobox)
         self.CheckButton = QtWidgets.QPushButton(self.frame_3)
         self.CheckButton.setObjectName("CheckButton")
         self.horizontalLayout_3.addWidget(self.CheckButton)
@@ -101,20 +101,25 @@ class Ui_MainWidget(object):
         self.SoundCheckbox.setChecked(True)
         self.SoundCheckbox.setObjectName("SoundCheckbox")
         self.horizontalLayout.addWidget(self.SoundCheckbox)
-        self.MessagesCheckbox = QtWidgets.QCheckBox(self.frame)
-        self.MessagesCheckbox.setChecked(True)
-        self.MessagesCheckbox.setObjectName("MessagesCheckbox")
-        self.horizontalLayout.addWidget(self.MessagesCheckbox)
         self.TrayCheckbox = QtWidgets.QCheckBox(self.frame)
         self.TrayCheckbox.setChecked(True)
         self.TrayCheckbox.setObjectName("TrayCheckbox")
         self.horizontalLayout.addWidget(self.TrayCheckbox)
-        self.DirectoryButton = QtWidgets.QPushButton(self.frame)
-        self.DirectoryButton.setObjectName("DirectoryButton")
-        self.horizontalLayout.addWidget(self.DirectoryButton)
+        self.MessagesCheckbox = QtWidgets.QCheckBox(self.frame)
+        self.MessagesCheckbox.setChecked(True)
+        self.MessagesCheckbox.setObjectName("MessagesCheckbox")
+        self.horizontalLayout.addWidget(self.MessagesCheckbox)
+        self.TrayhideCheckbox = QtWidgets.QCheckBox(self.frame)
+        self.TrayhideCheckbox.setEnabled(True)
+        self.TrayhideCheckbox.setChecked(True)
+        self.TrayhideCheckbox.setObjectName("TrayhideCheckbox")
+        self.horizontalLayout.addWidget(self.TrayhideCheckbox)
         spacerItem5 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem5)
         self.verticalLayout.addWidget(self.frame)
+        self.DirectoryButton = QtWidgets.QPushButton(MainWidget)
+        self.DirectoryButton.setObjectName("DirectoryButton")
+        self.verticalLayout.addWidget(self.DirectoryButton)
         self.frame_2 = QtWidgets.QFrame(MainWidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -162,6 +167,8 @@ class Ui_MainWidget(object):
 
         self.retranslateUi(MainWidget)
         self.ExitButton.clicked.connect(MainWidget.close)
+        self.TrayCheckbox.toggled['bool'].connect(self.TrayhideCheckbox.setEnabled)
+        self.TrayCheckbox.toggled['bool'].connect(self.MessagesCheckbox.setEnabled)
         QtCore.QMetaObject.connectSlotsByName(MainWidget)
 
     def retranslateUi(self, MainWidget):
@@ -173,13 +180,14 @@ class Ui_MainWidget(object):
         self.label_3.setText(_translate("MainWidget", "Last de-spawn:"))
         self.DespawnLabel.setText(_translate("MainWidget", "Unknown"))
         self.label.setText(_translate("MainWidget", "Select platfrom:"))
-        self.PlatfromCombobox.setItemText(0, _translate("MainWidget", "PC"))
-        self.PlatfromCombobox.setItemText(1, _translate("MainWidget", "PS4"))
-        self.PlatfromCombobox.setItemText(2, _translate("MainWidget", "XB1"))
+        self.PlatformCombobox.setItemText(0, _translate("MainWidget", "PC"))
+        self.PlatformCombobox.setItemText(1, _translate("MainWidget", "PS4"))
+        self.PlatformCombobox.setItemText(2, _translate("MainWidget", "XB1"))
         self.CheckButton.setText(_translate("MainWidget", "Check now"))
         self.SoundCheckbox.setText(_translate("MainWidget", "Sound"))
+        self.TrayCheckbox.setText(_translate("MainWidget", "Tray Icon"))
         self.MessagesCheckbox.setText(_translate("MainWidget", "Messages"))
-        self.TrayCheckbox.setText(_translate("MainWidget", "Exit to tray"))
+        self.TrayhideCheckbox.setText(_translate("MainWidget", "Exit to tray"))
         self.DirectoryButton.setText(_translate("MainWidget", "Open config directory"))
         self.SpawnButton.setText(_translate("MainWidget", "Play spawn sound"))
         self.DespawnButton.setText(_translate("MainWidget", "Play despawn sound"))
