@@ -19,6 +19,7 @@ from PyQt5.QtGui import QIcon
 class MainWindow(QWidget):
     get_data_signal = pyqtSignal()
     change_platform_signal = pyqtSignal(str)
+    quit_signal = pyqtSignal()
 
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -80,6 +81,7 @@ class MainWindow(QWidget):
         self.get_data_signal.connect(self.worker.get_data)
         self.change_platform_signal.connect(self.worker.set_platform)
         self.ui.CheckButton.clicked.connect(self.worker.get_data)
+        self.quit_signal.connect(self.worker.stop_worker)
         self.worker_thread.start()
 
         self.load_config()
@@ -287,6 +289,7 @@ class MainWindow(QWidget):
         Gets the current settings from the UI and saves them to the config
         file then stops the QThread with the worker and closes the app
         '''
+        self.quit_signal.emit()
 
         if self.ui.SoundCheckbox.checkState() == 2:
             sounds = True
@@ -319,7 +322,7 @@ class MainWindow(QWidget):
         self.base_path.mkdir(parents=True, exist_ok=True)
         with open(self.conf_path, "w") as f:
             json.dump(settings, f, indent=4)
-        self.worker_thread.quit()
+
         QApplication.quit()
 
     @pyqtSlot()
@@ -393,6 +396,11 @@ class Worker(QObject):
         self.timer.setInterval(60000)
         self.timer.timeout.connect(self.get_data)
         self.timer.start()
+
+    @pyqtSlot()
+    def stop_worker(self):
+        self.timer.stop()
+        self.thread().quit()
 
     @pyqtSlot()
     def get_data(self):
