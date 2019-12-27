@@ -4,6 +4,7 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+wf-sentient-tracker = {editable = true,path = "."}
 
 [packages]
 requests = "*"

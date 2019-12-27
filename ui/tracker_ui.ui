@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>483</width>
-    <height>227</height>
+    <width>543</width>
+    <height>336</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,19 +15,106 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="StatusLabel">
-     <property name="text">
-      <string>No anomaly currently present</string>
+    <widget class="QFrame" name="frame_4">
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
      </property>
-     <property name="scaledContents">
-      <bool>false</bool>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
      </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-     <property name="textInteractionFlags">
-      <set>Qt::NoTextInteraction</set>
-     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="1" column="1">
+       <widget class="QLabel" name="label_2">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="layoutDirection">
+         <enum>Qt::LeftToRight</enum>
+        </property>
+        <property name="text">
+         <string>Last spawn:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QLabel" name="SpawnLabel">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Unknown</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" colspan="2">
+       <widget class="QLabel" name="StatusLabel">
+        <property name="text">
+         <string>No anomaly currently present</string>
+        </property>
+        <property name="scaledContents">
+         <bool>false</bool>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::NoTextInteraction</set>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <spacer name="horizontalSpacer_8">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="1" column="0">
+       <spacer name="horizontalSpacer_7">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLabel" name="label_3">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Last de-spawn:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QLabel" name="DespawnLabel">
+        <property name="text">
+         <string>Unknown</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
    <item>
@@ -60,7 +147,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QComboBox" name="PlatfromCombobox">
+       <widget class="QComboBox" name="PlatformCombobox">
         <item>
          <property name="text">
           <string>PC</string>
@@ -140,6 +227,16 @@
        </widget>
       </item>
       <item>
+       <widget class="QCheckBox" name="TrayCheckbox">
+        <property name="text">
+         <string>Tray Icon</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QCheckBox" name="MessagesCheckbox">
         <property name="text">
          <string>Messages</string>
@@ -150,7 +247,10 @@
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="TrayCheckbox">
+       <widget class="QCheckBox" name="TrayhideCheckbox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
         <property name="text">
          <string>Exit to tray</string>
         </property>
@@ -173,6 +273,13 @@
        </spacer>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="DirectoryButton">
+     <property name="text">
+      <string>Open config directory</string>
+     </property>
     </widget>
    </item>
    <item>
@@ -230,6 +337,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="HelpButton">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="ExitButton">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -275,6 +389,38 @@
     <hint type="destinationlabel">
      <x>336</x>
      <y>209</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>TrayCheckbox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>TrayhideCheckbox</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>269</x>
+     <y>197</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>269</x>
+     <y>233</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>TrayCheckbox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MessagesCheckbox</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>219</x>
+     <y>197</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>167</x>
+     <y>233</y>
     </hint>
    </hints>
   </connection>
