@@ -1,5 +1,5 @@
 -i https://pypi.org/simple/
-certifi==2020.12.5
+certifi==2022.12.7
 chardet==3.0.4
 idna==2.8
 pyqt5-sip==12.8.1
